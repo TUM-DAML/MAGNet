@@ -1,0 +1,41 @@
+{
+  "zinc": {
+    "num_workers": 15,
+    "cuda": 0,
+    "seed": 2,
+    "num_operations": 500,
+    "num_iters": 3000,
+    "min_frequency": 0,
+    "mp_thd": 1e5,
+    "hidden_size": 256,
+    "atom_embed_size": [
+      192,
+      16,
+      16,
+      16,
+      16
+    ],
+    "edge_embed_size": 256,
+    "motif_embed_size": [
+      256,
+      256
+    ],
+    "latent_size": 256,
+    "depth": 15,
+    "motif_depth": 6,
+    "dropout": 0.1,
+    "virtual": false,
+    "pooling": "add",
+    "steps": 60000,
+    "batch_size": 500,
+    "lr": 0.005,
+    "lr_anneal_iter": 100,
+    "lr_anneal_rate": 0.995,
+    "grad_clip_norm": 1.0,
+    "beta_warmup": 10000,
+    "beta_min": 0.001,
+    "beta_max": 0.7,
+    "beta_anneal_period": 100000,
+    "prop_weight": 0.2
+  }
+}

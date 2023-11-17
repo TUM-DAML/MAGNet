@@ -1,0 +1,14 @@
+[tool.black]
+line-length = 115
+exclude = '''
+/(
+    \.eggs
+  | \.git
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"

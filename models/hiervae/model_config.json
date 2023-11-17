@@ -1,0 +1,14 @@
+{
+    "zinc": {
+        "log_every": 10,
+        "batch_size": 50,
+        "clip_norm": 5.0,
+        "step_beta": 0.001,
+        "max_beta": 1.0,
+        "beta": 0,
+        "kl_warmup": 10000,
+        "kl_anneal": 2000,
+        "epochs": 20,
+        "progress_bar": true
+    }
+}

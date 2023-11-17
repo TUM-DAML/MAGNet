@@ -1,0 +1,13 @@
+{
+    "zinc": {
+        "lr": 0.001,
+        "clip_norm": 50.0,
+        "epochs": 20,
+        "log_every": 20,
+        "beta": 0.0,
+        "step_beta": 0.002,
+        "kl_warmup": 40000,
+        "kl_anneal": 2000,
+        "progress_bar": false
+    }
+}

@@ -1,0 +1,48 @@
+
+seml:
+  executable: experiments/training_seml.py
+  name: baselines-train
+  output_dir: experiments/slurm_output
+  project_root_dir: ..
+  conda_environment: baselines
+
+slurm:
+  experiments_per_job: 1
+  sbatch_options:
+    gres: gpu:1 
+    mem: 32G  
+    cpus-per-task: 2 
+    time: 2-00:00    
+    qos: students
+    partition: gpu_all
+
+###### BEGIN PARAMETER CONFIGURATION ######
+
+fixed:
+  dataset: zinc
+
+grid:
+  model_name:
+    type: choice
+    options:
+      - HIERVAE
+      - JTVAE
+      - PSVAE
+      - SMILES-LSTM
+      - MICAM
+      - GCPN
+      - GRAPHAF
+      - MOLER
+      - CHARVAE
+
+random:
+  samples: 2
+  seed: 42
+
+  model_seed:
+    type: randint
+    min: 0
+    max: 500
+
+
+

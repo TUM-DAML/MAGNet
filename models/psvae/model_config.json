@@ -1,0 +1,36 @@
+{
+    "zinc": {
+        "train_set": "zinc/train.txt",
+        "valid_set": "zinc/val.txt",
+        "test_set": "zinc/test.txt",
+        "vocab": "zinc/psvae_512.txt",
+        "shuffle": true,
+        "batch_size": 32,
+        "lr": 0.001,
+        "alpha": 0.1,
+        "beta": 0.0,
+        "step_beta": 0.002,
+        "max_beta": 0.01,
+        "kl_warmup": 0,
+        "kl_anneal_iter": 1000,
+        "num_workers": 3,
+        "gpus": "0",
+        "epochs": 6,
+        "patience": 3,
+        "grad_clip": 10,
+        "monitor": "val_loss",
+        "props": [
+            "qed",
+            "logp"
+        ],
+        "node_hidden_dim": 300,
+        "graph_embedding_dim": 400,
+        "latent_dim": 56,
+        "predictor_hidden_dim": 200,
+        "max_pos": 50,
+        "atom_embedding_dim": 50,
+        "piece_embedding_dim": 100,
+        "pos_embedding_dim": 50,
+        "piece_hidden_dim": 200
+    }
+}
