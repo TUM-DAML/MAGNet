@@ -1,0 +1,14 @@
+{
+  "zinc": {
+    "train_data": "zinc/train.txt",
+    "valid_data": "zinc/val.txt",
+    "batch_size": 512,
+    "valid_every": 1000,
+    "n_epochs": 100,
+    "max_len": 100,
+    "hidden_size": 512,
+    "n_layers": 3,
+    "rnn_dropout": 0.2,
+    "lr": 1e-3
+  }
+}

@@ -1,0 +1,65 @@
+{
+    "zinc": {
+        "vae_training": {
+            "dataset": "zinc",
+            "batch_size": 64,
+            "epochs": 30,
+            "num_workers": 3,
+            "lr": 0.0003071057367777374,
+            "lr_sch_decay": 0.9801,
+            "dim_config": {
+                "latent_dim": 100,
+                "atom_id_dim": 25,
+                "atom_charge_dim": 10,
+                "shape_id_dim": 35,
+                "atom_multiplicity_dim": 10,
+                "shape_multiplicity_dim": 10,
+                "motif_positional_dim": 15,
+                "motif_seq_positional_dim": 15,
+                "motif_feat_dim": 50,
+                "enc_atom_dim": 25,
+                "enc_shapes_dim": 25,
+                "enc_joins_dim": 25,
+                "enc_leafs_dim": 25,
+                "enc_global_dim": 25,
+                "leaf_rnn_hidden": 256,
+                "shape_rnn_hidden": 256,
+                "shape_gnn_dim": 189,
+                "max_shape_mult": 20,
+                "max_atom_mult": 40,
+                "add_std": 0.1
+            },
+            "layer_config": {
+                "num_layers_enc": 4,
+                "num_layers_hgraph": 2,
+                "num_layers_latent": 1,
+                "num_layers_shape_enc": 2,
+                "node_aggregation": "sum"
+            },
+            "loss_weights": {
+                "shapeset": 1,
+                "shapeadj": 1,
+                "motifs": 1,
+                "joins": 1,
+                "leafs": 1
+            },
+            "gradclip": 3,
+            "beta_annealing": {
+                "init": 0,
+                "max": 0.01,
+                "start": 2000,
+                "every": 2500,
+                "step": 0.001
+            }
+        },
+        "flow_training": {
+            "batch_size": 1024,
+            "epochs": 5000,
+            "val_n_times": 5,
+            "num_workers": 3,
+            "flow_dim_config": {
+                "hidden_dim": 512
+            }
+        }
+    }
+}

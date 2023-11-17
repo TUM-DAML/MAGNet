@@ -1,0 +1,6 @@
+{
+    "zinc": {
+        "vocab_size": 350,
+        "model": "MoLeR"
+    }
+}
