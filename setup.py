@@ -1,7 +1,7 @@
 from setuptools import find_packages, setup
 
 setup(
-    name="baselines",
+    name="models",
     version="1.0.0",
     author="Johanna Sommer, Leon Hetzel",
     url="",
