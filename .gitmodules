@@ -1,0 +1,9 @@
+[submodule "resources/conditional-flow-matching"]
+	path = resources/conditional-flow-matching
+	url = https://github.com/atong01/conditional-flow-matching.git
+[submodule "resources/mso_updated"]
+	path = resources/mso_updated
+	url = https://github.com/johannaSommer/mso_updated.git
+[submodule "resources/guacamol"]
+	path = resources/guacamol
+	url = https://github.com/johannaSommer/guacamol.git

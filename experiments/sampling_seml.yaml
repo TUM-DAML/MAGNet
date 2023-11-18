@@ -1,0 +1,45 @@
+
+seml:
+  executable: experiments/sampling_seml.py
+  name: baselines-eval
+  output_dir: experiments/slurm_output
+  project_root_dir: ..
+  conda_environment: baselines
+
+slurm:
+  experiments_per_job: 1
+  sbatch_options:
+    gres: gpu:1
+    mem: 16G 
+    cpus-per-task: 2
+    time: 0-05:00
+    qos: students
+    partition: gpu_all
+
+###### BEGIN PARAMETER CONFIGURATION ######
+
+fixed:
+  num_samples: 10000
+  seed: 42
+  dataset: zinc
+
+grid:
+  model_config:
+    type: choice
+    options:
+      - [JTVAE, 3bsp47ta]
+      - [JTVAE, 3un6wjos]
+      - [HIERVAE, 3612on3z]
+      - [HIERVAE, 1zn3cdv7]
+      - [PSVAE, 2qiud1em]
+      - [PSVAE, 32oi3puz]
+      - [MAGNET, xyz]
+      - [MAGNET, xyz]
+      - [MOLER, xyz]
+      - [MOLER, xyz]
+      - [SMILESLSTM, ckpt1]
+      - [SMILESLSTM, ckpt2]
+      - [GRAPHAF, ckpt1]
+      - [GRAPHAF, ckpt2]
+      - [GCPN, ckpt1]
+      - [GCPN, ckpt2]

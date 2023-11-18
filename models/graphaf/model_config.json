@@ -1,0 +1,19 @@
+{
+    "zinc": {
+        "hidden_dims": [
+            256,
+            256,
+            256,
+            256
+        ],
+        "batch_norm": true,
+        "max_edge_unroll": 12,
+        "max_node": 38,
+        "criterion": "nll",
+        "lr": 1e-3,
+        "batch_size": 128,
+        "num_epochs": 15,
+        "node_num_layers": 12,
+        "edge_num_layers": 12
+    }
+}
