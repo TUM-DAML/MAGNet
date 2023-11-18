@@ -23,7 +23,6 @@ Supported Molecule Generation Models:
 - [CHARVAE](https://arxiv.org/pdf/1610.02415.pdf) (without Terminal GRU)
 - [JTVAE](https://arxiv.org/abs/1802.04364)
 - [HIERVAE](https://arxiv.org/pdf/2002.03230.pdf)
-- [MICAM](https://arxiv.org/pdf/2302.01129.pdf) (Currently broken ❌)
 - [PSVAE](https://arxiv.org/abs/2106.15098)
 - [MOLER](https://arxiv.org/abs/2103.03864)
 - [GRAPHAF](https://proceedings.neurips.cc/paper_files/paper/2018/file/d60678e8f2ba9c540798ebbde31177e8-Paper.pdf)
