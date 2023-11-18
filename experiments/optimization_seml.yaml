@@ -13,7 +13,7 @@ slurm:
     mem: 16G 
     cpus-per-task: 2 
     time: 2-00:00
-    qos: phd
+    qos: students
     partition: gpu_all
 
 ###### BEGIN PARAMETER CONFIGURATION ######

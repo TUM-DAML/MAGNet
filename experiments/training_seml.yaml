@@ -29,7 +29,6 @@ grid:
       - JTVAE
       - PSVAE
       - SMILES-LSTM
-      - MICAM
       - GCPN
       - GRAPHAF
       - MOLER
