@@ -16,7 +16,6 @@ def get_model_func(dataset: str, model_id: str, seed: int, config: dict) -> Flow
         collection=config["WB_PROJECT"],
         run_id=model_id,
         model_class=FlowMAGNet,
-        model_class=MAGNet,
         seed_model=seed,
     )
     return InferenceMAGNET(model=model, config=config, seed=seed)
