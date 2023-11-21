@@ -21,6 +21,7 @@ slurm:
 fixed:
   num_samples: 10000
   dataset: zinc
+  input_smiles_file: zinc/test.txt
 
 grid:
   model_config:

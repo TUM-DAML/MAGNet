@@ -1,3 +1,4 @@
+import tqdm
 import numpy as np
 import pytorch_lightning as pl
 import torch
@@ -16,11 +17,11 @@ class LatentDataModule(pl.LightningDataModule):
     Lightning Data Module to handle different datasets & loaders
     """
 
-    def __init__(self, data_dir, collection, magnet_id, batch_size, num_workers=8, ndatapoints=100000):
+    def __init__(self, collection, magnet_id, batch_size, dataset, num_workers=8):
         super().__init__()
-        self.data_dir = data_dir
         self.collection = collection
         self.model_id = magnet_id
+        self.dataset = dataset
         self.dl_args = {
             "batch_size": batch_size,
             "num_workers": num_workers,
@@ -28,12 +29,9 @@ class LatentDataModule(pl.LightningDataModule):
             "collate_fn": latent_collate,
             "shuffle": True,
         }
-        self.datapoints = ndatapoints
 
     def setup(self, stage=None):
-        self.train_ds = LatentDataset(
-            self.data_dir, collection=self.collection, model_id=self.model_id, n=self.datapoints
-        )
+        self.train_ds = LatentDataset(collection=self.collection, model_id=self.model_id, dataset=self.dataset)
         self.val_ds = self.train_ds.magnet_model.dataset_ref
         self.test_ds = None
 
@@ -49,30 +47,26 @@ class LatentDataModule(pl.LightningDataModule):
 
 
 class LatentDataset(Dataset):
-    def __init__(self, data_dir, collection, model_id, n):
+    def __init__(self, collection, model_id, dataset):
         super().__init__()
-        self.magnet_model = load_model_from_id(data_dir, collection, model_id)
-        self.data_loader = self.magnet_model.datamodule_ref.train_dataloader()
-        self.magnet_model.cuda()
+        self.magnet_model = load_model_from_id(collection, model_id, dataset=dataset)
+        data_loader = self.magnet_model.trainer.datamodule.train_dataloader()
         self.FM = ExactOptimalTransportConditionalFlowMatcher(sigma=0.0)
 
-        magnet = self.magnet_model
-        _z_means = []
-        _z_stds = []
-        for batch in self.data_loader:
-            manual_batch_to_device(batch, magnet.device)
-            encoder_outputs = magnet.encode_graph(batch)
-            encoder_outputs = magnet.latent_module(encoder_outputs)
-            z = encoder_outputs["z_graph_dist_params"].detach()
-            z_mean, z_std = torch.split(z, z.size(1) // 2, 1)
-            z_std = torch.exp(-torch.abs(z_std) / 2)
-            [_z_means.append(z) for z in z_mean.detach().cpu().numpy()]
-            [_z_stds.append(z) for z in z_std.detach().cpu().numpy()]
-            if len(_z_means) > n:
-                break
+        z_means, z_stds = [], []
+        with torch.no_grad():
+            for batch in tqdm.tqdm(data_loader):
+                manual_batch_to_device(batch, self.magnet_model.device)
+                encoder_outputs = self.magnet_model.encode_graph(batch)
+                encoder_outputs = self.magnet_model.latent_module(encoder_outputs)
+                z = encoder_outputs["z_graph_dist_params"].detach()
+                z_mean, z_std = torch.split(z, z.size(1) // 2, 1)
+                z_std = torch.exp(-torch.abs(z_std) / 2)
+                z_means.extend([z for z in z_mean.detach().cpu().numpy()])
+                z_stds.extend([z for z in z_std.detach().cpu().numpy()])
 
-        self.z_mean = _z_means[:n]
-        self.z_std = _z_stds[:n]
+        self.z_mean = z_means
+        self.z_std = z_stds
         print("Gathered all embeddings. Preprocessing done...", flush=True)
 
     def __len__(self):

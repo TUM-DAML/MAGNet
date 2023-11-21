@@ -11,6 +11,7 @@ from models.jtvae.fastjt.jtmpn import JTMPN
 from models.jtvae.fastjt.jtnn_enc import JTNNEncoder
 from models.jtvae.fastjt.mpn import MPN
 from models.jtvae.fastjt.vocab import Vocab
+from models.global_utils import DATA_DIR
 
 sys.path.append(os.path.join(RDConfig.RDContribDir, "SA_Score"))
 import rdkit.Chem as Chem
@@ -21,7 +22,6 @@ class MolTreeFolder(object):
     def __init__(
         self,
         data,
-        baseline_dir,
         batch_size=32,
         num_workers=4,
         shuffle=True,
@@ -31,8 +31,8 @@ class MolTreeFolder(object):
         partition="train",
     ):
         assert data in ["moses", "zinc", "chembl"]
-        self.data_folder = baseline_dir / "data" / "JTVAE" / data / partition
-        self.vocab = baseline_dir / "data" / "JTVAE" / data / "jtvae_vocab.txt"
+        self.data_folder = DATA_DIR / "JTVAE" / data / partition
+        self.vocab = DATA_DIR / "JTVAE" / data / "jtvae_vocab.txt"
         self.vocab = Vocab([x.strip("\r\n ") for x in open(self.vocab)])
         self.name = data
         self.data_files = [fn for fn in os.listdir(self.data_folder)]

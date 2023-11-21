@@ -9,10 +9,9 @@ from rdkit import RDLogger
 
 
 class InferenceBase(ABC):
-    def __init__(self, model, config: dict, seed: int, batch_size: int = 64):
+    def __init__(self, model, seed: int, batch_size: int = 64):
         self.model = model
         self.batch_size = batch_size
-        self.config = config
         self.seed = seed
         self.start_inference_server()
 

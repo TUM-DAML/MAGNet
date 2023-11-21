@@ -33,8 +33,8 @@ class AtomFeaturizer(torch.nn.Module):
         )
         # we define featurizers here even though they are not used in this module
         # but this way, all embeddings are collected in the same place
-        self.atom_mult_emb = Embedding(dim_config["max_atom_mult"], dim_config["atom_multiplicity_dim"])
-        self.shape_mult_emb = Embedding(dim_config["max_shape_mult"], dim_config["shape_multiplicity_dim"])
+        self.atom_mult_emb = Embedding(feat_size["max_shape_size"], dim_config["atom_multiplicity_dim"])
+        self.shape_mult_emb = Embedding(feat_size["max_mult_shapes"], dim_config["shape_multiplicity_dim"])
 
     def forward(self, feat_dict):
         num_joins = 3

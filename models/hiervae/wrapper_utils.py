@@ -10,24 +10,31 @@ from models.hiervae.src.hgnn import HierVAE
 from models.hiervae.src.mol_graph import MolGraph
 from models.hiervae.src.vocab import PairVocab, common_atom_vocab
 from models.hiervae.training_loop import run_hiervae_training
+from models.hiervae.preprocess_hiervae import preprocess_hiervae
+from models.hiervae.get_vocab import get_vocab
 from models.inference import InferenceBase
+from models.global_utils import BASELINE_DIR, CKPT_DIR
 
 
-def get_model_func(dataset: str, model_id: str, seed: int, config: dict) -> HierVAE:
-    baseline_dir = Path(config["BASELINE_DIR"])
-    path = baseline_dir / "model_ckpts" / "HIERVAE" / dataset / model_id / "checkpoints"
+def get_model_func(dataset: str, model_id: str, seed: int) -> HierVAE:
+    path = CKPT_DIR / "HIERVAE" / dataset / model_id / "checkpoints"
     checkpoint = sorted(os.listdir(path))[-1]
     print("Using HIERVAE checkpoint: ", checkpoint)
     path = path / checkpoint
-    vocab = PairVocab(dataset, baseline_dir)
+    vocab = PairVocab(dataset, BASELINE_DIR)
     model = HierVAE(vocab=vocab)
     model.load_state_dict(torch.load(path)["state_dict"])
     model.cuda()
-    return InferenceHIERVAE(model=model, config=config, seed=seed)
+    return InferenceHIERVAE(model=model, seed=seed)
 
 
-def run_training(seed: int, dataset: str, config: dict):
-    run_hiervae_training(seed, dataset, config)
+def run_training(seed: int, dataset: str):
+    run_hiervae_training(seed, dataset)
+
+def run_preprocessing(dataset_name: str, num_processes: int):
+    print("Running HIERVAE preprocessing...")
+    get_vocab(dataset_name, num_processes)
+    preprocess_hiervae(dataset_name, num_processes)
 
 
 class InferenceHIERVAE(InferenceBase):

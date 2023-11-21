@@ -10,13 +10,13 @@ from guacamol.distribution_matching_generator import DistributionMatchingGenerat
 from rdkit import Chem, DataStructs
 from rdkit.Chem import AllChem
 
-from models.global_utils import BASELINE_DIR, smiles_from_file
+from models.global_utils import BASELINE_DIR, smiles_from_file, WB_LOG_DIR, SMILES_DIR
 
 
 def calculate_all_sampling_metrics(smiles, dataset):
     if dataset == "zinc":
-        train_path = BASELINE_DIR / "smiles_files" / dataset / "train.txt"
-        test_path = BASELINE_DIR / "smiles_files" / dataset / "test.txt"
+        train_path = SMILES_DIR / dataset / "train.txt"
+        test_path = SMILES_DIR / dataset / "test.txt"
     else:
         raise NotImplementedError()
     # metrics can only be computed with > 10000 smiles
@@ -40,7 +40,7 @@ class DummyGenerator(DistributionMatchingGenerator):
 
 def calculate_guacamol_benchmark(dataset_path, generated_smiles):
     model_generator = DummyGenerator(generated_smiles)
-    json_path = BASELINE_DIR / "wb_logs" / "guacamol_jsons" / (str(time.time()) + ".json")
+    json_path = WB_LOG_DIR / "guacamol_jsons" / (str(time.time()) + ".json")
     assess_distribution_learning(
         model_generator,
         chembl_training_file=dataset_path,

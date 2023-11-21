@@ -8,7 +8,7 @@ import wandb
 from pytorch_lightning.callbacks import ModelCheckpoint
 from rdkit import RDLogger
 
-from models.global_utils import get_model_config
+from models.global_utils import get_model_config, BASELINE_DIR, WB_CONFIG, WB_LOG_DIR
 from models.magnet.src.data.latent_module import LatentDataModule
 from models.magnet.src.data.mol_module import MolDataModule
 from models.magnet.src.model.flow_vae import FlowMAGNet, get_flow_training_args
@@ -19,12 +19,12 @@ from models.magnet.src.utils import save_model_config_to_file
 RDLogger.DisableLog("rdApp.*")
 
 
-def run_magnet_latent_train(seed: int, dataset: str, config: dict, magnet_id: str):
-    kwargs = get_model_config(config, "magnet", dataset)["flow_training"]
+def run_magnet_latent_train(seed: int, dataset: str,magnet_id: str):
+    kwargs = get_model_config("magnet", dataset)["flow_training"]
     kwargs = get_flow_training_args(kwargs)
     dm = LatentDataModule(
-        data_dir=Path(config["BASELINE_DIR"]),
-        collection=config["WB_PROJECT"],
+        dataset=dataset,
+        collection=WB_CONFIG["WB_PROJECT"],
         magnet_id=magnet_id,
         batch_size=kwargs["batch_size"],
         ndatapoints=kwargs["n_datapoints"],
@@ -33,8 +33,7 @@ def run_magnet_latent_train(seed: int, dataset: str, config: dict, magnet_id: st
 
     # Load VAE model for inference
     model, model_config = load_model_from_id(
-        data_dir=Path(config["BASELINE_DIR"]),
-        collection=config["WB_PROJECT"],
+        collection=WB_CONFIG["WB_PROJECT"],
         run_id=magnet_id,
         load_config=dict(
             patience=max(1, kwargs["epochs"] // 400),
@@ -42,7 +41,9 @@ def run_magnet_latent_train(seed: int, dataset: str, config: dict, magnet_id: st
             lr_sch_decay=kwargs["lr_sch_decay"],
             flow_dim_config=kwargs["flow_dim_config"],
             sample_config=kwargs["sample_config"],
+            dataset=dataset
         ),
+        dataset=dataset,
         model_class=FlowMAGNet,
         seed_model=seed,
         return_config=True,
@@ -50,14 +51,14 @@ def run_magnet_latent_train(seed: int, dataset: str, config: dict, magnet_id: st
     model.cuda()
     wandb.init()
     logger = pl.loggers.WandbLogger(
-        entity=config["WB_ENTITY"],
-        project=config["WB_PROJECT"],
-        save_dir=str(Path(config["BASELINE_DIR"]) / "wb_logs"),
+        entity=WB_CONFIG["WB_ENTITY"],
+        project=WB_CONFIG["WB_PROJECT"],
+        save_dir=str(WB_LOG_DIR),
     )
     wandb.config.update(kwargs)
     logger.experiment
     save_model_config_to_file(
-        Path(config["BASELINE_DIR"]) / "wb_logs" / config["WB_PROJECT"], str(logger.version), model_config, model
+        WB_LOG_DIR / WB_CONFIG["WB_PROJECT"], str(logger.version), model_config, model
     )
 
     # Train Flow Matching
@@ -80,11 +81,10 @@ def run_magnet_latent_train(seed: int, dataset: str, config: dict, magnet_id: st
     return dict()
 
 
-def run_magnet_vae_training(seed: int, dataset: str, config: dict):
+def run_magnet_vae_training(seed: int, dataset: str):
     torch.manual_seed(seed)
-    kwargs = get_model_config(config, "magnet", dataset)["vae_training"]
+    kwargs = get_model_config("magnet", dataset)["vae_training"]
     dm_kwargs = dict(
-        data_dir=Path(config["BASELINE_DIR"]),
         dataset=kwargs["dataset"],
         batch_size=kwargs["batch_size"],
         num_workers=kwargs["num_workers"],
@@ -94,9 +94,9 @@ def run_magnet_vae_training(seed: int, dataset: str, config: dict):
     dm.setup()
     wandb.init()
     logger = pl.loggers.WandbLogger(
-        entity=config["WB_ENTITY"],
-        project=config["WB_PROJECT"],
-        save_dir=str(Path(config["BASELINE_DIR"]) / "wb_logs"),
+        entity=WB_CONFIG["WB_ENTITY"],
+        project=WB_CONFIG["WB_PROJECT"],
+        save_dir=str(WB_LOG_DIR),
     )
     wandb.config.update(kwargs)
 
@@ -121,6 +121,7 @@ def run_magnet_vae_training(seed: int, dataset: str, config: dict):
         max_epochs=kwargs["epochs"],
         check_val_every_n_epoch=1,
         gradient_clip_val=kwargs["gradclip"],
+        limit_val_batches=int(50),
     )
     trainer_kwargs.update({"enable_progress_bar": False})
     checkpointing = ModelCheckpoint(monitor="val_loss", filename="model-{epoch:02d}-{val_loss:.2f}", save_last=True)
@@ -130,7 +131,7 @@ def run_magnet_vae_training(seed: int, dataset: str, config: dict):
     # this needs to be done due to issues with w&b, we cant access the run_id otherwise
     logger.experiment
     save_model_config_to_file(
-        Path(config["BASELINE_DIR"]) / "wb_logs" / config["WB_PROJECT"], str(logger.version), kwargs, model
+        WB_LOG_DIR / WB_CONFIG["WB_PROJECT"], str(logger.version), kwargs, model
     )
 
     trainer.fit(model, datamodule=dm)
