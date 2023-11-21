@@ -27,7 +27,7 @@ from interruptingcow import timeout
 from torch.multiprocessing import Pool
 
 from src.chemutils.hypergraph import MolDecomposition
-from models.global_utils import DATA_DIR
+from models.global_utils import DATA_DIR, SMILES_DIR
 from models.magnet.src.utils import smiles_from_file
 
 
@@ -54,27 +54,22 @@ def process_func(input):
     return output_list, mol_holder.mol.GetNumAtoms()
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--path", default=str(DATA_DIR / "zinc"))
-    parser.add_argument("--num_processes", type=int, default=16)
-    args = parser.parse_args()
-
-    dataset_path = PosixPath(args.path)
+def run_magnet_preproc(dataset_name, num_processes):
+    smiles_path = SMILES_DIR / dataset_name
+    data_path = DATA_DIR / "MAGNET" / dataset_name
     partitions = ["train.txt", "val.txt", "test.txt"]
     vocabulary_name = "magnet_vocab.pkl"
 
     decomp_outputs = []
 
     for part in partitions:
-        output_dir = dataset_path / part.split(".")[0]
-        # assert not output_dir.is_dir()
-        output_dir.mkdir(exist_ok=True)
+        output_dir = data_path / part.split(".")[0]
+        output_dir.mkdir(parents=True, exist_ok=True)
 
-        all_smiles = smiles_from_file(dataset_path / part)
+        all_smiles = smiles_from_file(smiles_path / part)
         all_smiles = [(output_dir, i, sm) for (i, sm) in enumerate(all_smiles)]
 
-        with Pool(processes=args.num_processes) as p:
+        with Pool(processes=num_processes) as p:
             max_ = len(all_smiles)
             with tqdm.tqdm(total=max_, desc="Decomposing " + part) as pbar:
                 for o in p.imap_unordered(process_func, all_smiles):
@@ -112,7 +107,7 @@ if __name__ == "__main__":
 
     print("Total vocabulary size: ", len(list(chain([shapes for shapes in shape_dict.values()]))))
 
-    fp = dataset_path / vocabulary_name
+    fp = data_path / vocabulary_name
     with open(fp, "wb") as f:
         pickle.dump(shape_dict, f, protocol=pickle.HIGHEST_PROTOCOL)
 

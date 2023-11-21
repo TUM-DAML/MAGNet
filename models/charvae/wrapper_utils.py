@@ -9,8 +9,8 @@ from models.global_utils import get_model_config
 from models.inference import InferenceBase
 
 
-def get_model_func(dataset: str, model_id: str, seed: int, config: dict) -> VAEUtils:
-    model_config = get_model_config(config, "charvae", dataset)
+def get_model_func(dataset: str, model_id: str, seed: int) -> VAEUtils:
+    model_config = get_model_config("charvae", dataset)
     encoder_file = model_config["encoder_weights_file"]
     decoder_file = model_config["decoder_weights_file"]
 
@@ -22,7 +22,11 @@ def get_model_func(dataset: str, model_id: str, seed: int, config: dict) -> VAEU
         seed=seed,
         id=model_id,
     )
-    return InferenceCHARVAE(model=model, config=config, seed=seed)
+    return InferenceCHARVAE(model=model, seed=seed)
+
+
+def run_preprocessing(dataset_name: str, num_processes: int):
+    print("CHARVAE does not need preprocessing, terminating now...")
 
 
 class InferenceCHARVAE(InferenceBase):
@@ -45,5 +49,5 @@ class InferenceCHARVAE(InferenceBase):
         return Chem.MolFromSmiles(smiles) is not None
 
 
-def run_training(seed: int, dataset: str, config: dict):
-    main_no_prop(seed, dataset, config)
+def run_training(seed: int, dataset: str):
+    main_no_prop(seed, dataset)

@@ -5,6 +5,7 @@ from multiprocessing import Pool
 from rdkit import Chem
 
 from models.hiervae.src.mol_graph import MolGraph
+from models.global_utils import BASELINE_DIR, SMILES_DIR, DATA_DIR
 
 
 def process(data):
@@ -20,21 +21,22 @@ def process(data):
     return vocab
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--ncpu", type=int, default=15)
-    args = parser.parse_args()
+def get_vocab(dataset_name: str, num_processes: int):
+    smiles_path = SMILES_DIR / dataset_name / "all.txt"
+    with open(smiles_path, "r") as file:
+        data = file.readlines()
 
-    data = [mol for line in sys.stdin for mol in line.split()[:2]]
-    data = list(set(data))
-
-    batch_size = len(data) // args.ncpu + 1
+    batch_size = len(data) // num_processes + 1
     batches = [data[i : i + batch_size] for i in range(0, len(data), batch_size)]
 
-    pool = Pool(args.ncpu)
+    pool = Pool(num_processes)
     vocab_list = pool.map(process, batches)
     vocab = [(x, y) for vocab in vocab_list for x, y in vocab]
     vocab = list(set(vocab))
 
-    for x, y in sorted(vocab):
-        print(x, y)
+    # write lines to output file
+    vocab_path = DATA_DIR / "HIERVAE" / dataset_name / "hiervae_vocab.txt"
+    vocab_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(vocab_path, "w") as f:
+        for x, y in sorted(vocab):
+            print(x, y, file=f)

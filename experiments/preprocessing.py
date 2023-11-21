@@ -13,7 +13,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--model_name", type=str, choices=SUPPORTED_MODELS, default="MAGNET")
     parser.add_argument("--dataset", type=str, choices=SUPPORTED_DATA, default="zinc")
-    parser.add_argument("--num_workers", type=int, default=10)
+    parser.add_argument("--num_workers", type=int, default=8)
     args = parser.parse_args()
 
     result = run_preprocessing(args.model_name, args.dataset, args.num_workers)

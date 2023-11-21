@@ -12,10 +12,10 @@ DATA_URLS = dict(zinc="https://figshare.com/ndownloader/files/43192467?private_l
 def check_dataset_exists(dataset_name):
     dataset_name = dataset_name.lower()
     if not (SMILES_DIR / dataset_name).exists():
-        print("Dataset not found, downloading now:", dataset_name)
+        print(f"Dataset {dataset_name} not found, downloading now...")
         download_dataset(dataset_name)
     else:
-        print("Found dataset in data directories!")
+        print(f"Found dataset {dataset_name} in data directories!")
 
 
 def download_dataset(dataset_name):
