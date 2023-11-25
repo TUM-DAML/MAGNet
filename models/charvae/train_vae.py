@@ -1,19 +1,9 @@
 import os
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
-
 from pathlib import Path
 
 import numpy as np
 import tensorflow as tf
-
-config = tf.compat.v1.ConfigProto()
-config.gpu_options.per_process_gpu_memory_fraction = 0.5
-config.gpu_options.allow_growth = True
-from tensorflow.python.client import device_lib
-
-print(tf.test.is_built_with_cuda())
-print(tf.config.list_physical_devices("GPU"))
 
 import os
 import time
@@ -38,20 +28,14 @@ from models.charvae.src.models import (
     load_property_predictor,
     property_predictor_model,
     variational_layers,
+    CHARS
 )
-from models.global_utils import get_model_config
+from models.global_utils import get_model_config, BASELINE_DIR, WB_LOG_DIR, SMILES_DIR, DATA_DIR
 
 
-def vectorize_data(params, config, dataset):
-    # @out : Y_train /Y_test : each is list of datasets.
-    #        i.e. if reg_tasks only : Y_train_reg = Y_train[0]
-    #             if logit_tasks only : Y_train_logit = Y_train[0]
-    #             if both reg and logit_tasks : Y_train_reg = Y_train[0], Y_train_reg = 1
-    #             if no prop tasks : Y_train = []
-
+def vectorize_data(params, dataset):
     MAX_LEN = params["MAX_LEN"]
-    path_to_char_file = Path(config["BASELINE_DIR"]) / "data" / "CHARVAE" / dataset / "chars.json"
-    CHARS = yaml.safe_load(open(path_to_char_file))
+    path_to_char_file = DATA_DIR / "CHARVAE" / dataset / "chars.json"
     params["NCHARS"] = len(CHARS)
     NCHARS = len(CHARS)
     CHAR_INDICES = dict((c, i) for i, c in enumerate(CHARS))
@@ -92,7 +76,7 @@ def vectorize_data(params, config, dataset):
     ## Load data if no properties
     else:
         # smiles = mu.load_smiles_and_data_df(params["data_file"], MAX_LEN)
-        path_to_train_file = Path(config["BASELINE_DIR"]) / "smiles_files" / dataset / "train.txt"
+        path_to_train_file = SMILES_DIR / dataset / "train.txt"
         with open(path_to_train_file) as file:
             smiles = file.readlines()
         smiles = [s.strip("\n") for s in smiles]
@@ -244,16 +228,16 @@ def kl_loss(truth_dummy, x_mean_log_var_output):
     return kl_loss
 
 
-def main_no_prop(seed, dataset, config):
-    params = get_model_config(config, "charvae", dataset)
+def main_no_prop(seed, dataset):
+    params = get_model_config("charvae", dataset)
     params["RAND_SEED"] = seed
     params = hyperparameters.load_params(params)
     start_time = time.time()
-    output_dir = Path(config["BASELINE_DIR"]) / "wb_logs" / "CHARVAE" / dataset / str(start_time)
+    output_dir = WB_LOG_DIR / "CHARVAE" / dataset / str(start_time)
     os.makedirs(output_dir, exist_ok=True)
     params["checkpoint_path"] = output_dir
 
-    X_train, X_test = vectorize_data(params, config, dataset)
+    X_train, X_test = vectorize_data(params, dataset)
     AE_only_model, encoder, decoder, kl_loss_var = load_models(params)
 
     # compile models
@@ -320,8 +304,5 @@ def main_no_prop(seed, dataset, config):
         verbose=keras_verbose,
         validation_data=[X_test, model_test_targets],
     )
-
-    encoder.save(params["encoder_weights_file"])
-    decoder.save(params["decoder_weights_file"])
     print("time of run : ", time.time() - start_time)
     print("**FINISHED**")

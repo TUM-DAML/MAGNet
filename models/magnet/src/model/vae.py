@@ -136,9 +136,7 @@ class MAGNet(pl.LightningModule):
         Configure optimizer and lr scheduler, is only called by torch lightning
         """
         optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
-        # optimizer = torch.optim.AdamW(self.parameters(), lr=self.lr, weight_decay=1e-3)
         scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, self.lr_sch_decay)
-        # scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=self.lr_sch_decay, patience=1)
         schedulers = {
             "scheduler": scheduler,
             "interval": "epoch",

@@ -3,6 +3,8 @@ from pathlib import Path
 import rdkit.Chem as Chem
 import torch
 
+from models.global_utils import DATA_DIR
+
 
 class Vocab(object):
     def __init__(self, smiles_list):
@@ -23,9 +25,9 @@ class PairVocab(object):
     def __init__(self, name, BASELINE_DIR, cuda=True, property=None):
         assert name in ["moses", "zinc", "chembl"]
         if property is None:
-            file = BASELINE_DIR / "data" / "HIERVAE" / name / "hiervae_vocab.txt"
+            file = DATA_DIR / "HIERVAE" / name / "hiervae_vocab.txt"
         else:
-            file = BASELINE_DIR / "data" / "HIERVAE" / name / (property + "_hiervae_vocab.txt")
+            file = DATA_DIR / "HIERVAE" / name / (property + "_hiervae_vocab.txt")
         smiles_pairs = [x.strip("\r\n ").split() for x in open(file)]
 
         cls = list(zip(*smiles_pairs))[0]

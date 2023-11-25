@@ -4,6 +4,7 @@ from models.global_utils import (
     BASELINE_DIR,
     SUPPORTED_DATA,
     SUPPORTED_MODELS,
+    SMILES_DIR,
     get_all_model_funcs,
     smiles_from_file,
 )
@@ -11,7 +12,7 @@ from models.global_utils import (
 
 def run_reconstruction(model_id, dataset, model_name, num_samples, input_smiles_file):
     # prepare model and input smiles
-    input_smiles_file = BASELINE_DIR / input_smiles_file
+    input_smiles_file = SMILES_DIR / input_smiles_file
     all_funcs = get_all_model_funcs(model_name)
     inference_server = all_funcs["load"](dataset=dataset, model_id=model_id, seed=0)
     input_smiles = smiles_from_file(input_smiles_file)
@@ -27,7 +28,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--input_smiles_file",
         type=str,
-        default="smiles_files/zinc/val.txt",
+        default="zinc/val.txt",
     )
     parser.add_argument("--dataset", type=str, choices=SUPPORTED_DATA, default="zinc")
     parser.add_argument("--num_samples", type=int, default=3)

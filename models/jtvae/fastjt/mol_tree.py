@@ -142,16 +142,3 @@ def main_mol_tree(oinput, ovocab, MAX_TREE_WIDTH=50):
     with open(ovocab, "w") as vocab_file:
         for x in cset:
             vocab_file.write(x + "\n")
-
-
-if __name__ == "__main__":
-    lg = rdkit.RDLogger.logger()
-    lg.setLevel(rdkit.RDLogger.CRITICAL)
-    # sys.stderr.write("Running tree decomposition on the dataset")
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-i", "--input", dest="input")
-    parser.add_argument("-v", "--vocab", dest="vocab")
-    opts = parser.parse_args()
-
-    main_mol_tree(opts.input, opts.vocab)

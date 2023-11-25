@@ -46,9 +46,9 @@ GENERATION_ORDER_CLS = {
 class DatasetPath(enum.Enum):
     """The directory with a data set should contain the following files."""
 
-    TRAIN = "train.smiles"
-    VALID = "valid.smiles"
-    TEST = "test.smiles"
+    TRAIN = "train.txt"
+    VALID = "val.txt"
+    TEST = "test.txt"
 
 
 def _read_data(path: Pathlike) -> SmilesDataSet:

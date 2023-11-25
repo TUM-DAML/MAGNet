@@ -12,7 +12,7 @@ from models.magnet.src.utils import calculate_balanced_acc, calculate_class_weig
 
 
 class LeafDecoder(torch.nn.Module):
-    def __init__(self, parent_ref, max_motif_len=35):
+    def __init__(self, parent_ref):
         super().__init__()
         dim_config = parent_ref.dim_config
         feature_sizes = parent_ref.feature_sizes
@@ -30,7 +30,7 @@ class LeafDecoder(torch.nn.Module):
         transformer_dim = feature_dim
         self.input_to_hidden = MLP([hidden_size, hidden_size // 2, feature_dim], plain_last=False)
         self.to_target = MLP([input_size + feature_dim, feature_dim, transformer_dim])
-        self.to_memory = MLP([feature_dim + max_motif_len, transformer_dim])
+        self.to_memory = MLP([feature_dim + feature_sizes["max_shape_size"], transformer_dim])
         self.leaf_classifier = MLP([transformer_dim, feature_dim // 2, output_dim])
         self.num_edges = feature_sizes["atom_adj_feat_size"]
         self.num_atoms = feature_sizes["num_atoms"] + 1
@@ -41,7 +41,7 @@ class LeafDecoder(torch.nn.Module):
             transformer_dim, nhead=2, dim_feedforward=256, batch_first=True
         )
         self.transformer = torch.nn.TransformerDecoder(_transformer_layers, num_layers=2)
-        self.max_motif_len = max_motif_len
+        self.max_motif_len = feature_sizes["max_shape_size"]
 
     def forward(self, batch, z_graph, sample, parent_ref):
         if sample:
@@ -311,7 +311,7 @@ class LeafDecoder(torch.nn.Module):
         bond_logits, atom_logits = leaf_logits[:, : self.num_edges], leaf_logits[:, self.num_edges :]
         bond_logits = bond_logits.reshape(-1, self.num_edges)
         bond_logits = bond_logits[atom_exists]
-        weights = calculate_class_weights(atom_target[atom_target != 11], self.num_atoms)
+        weights = calculate_class_weights(atom_target[atom_target != (self.num_atoms + 1)], self.num_atoms)
 
         atom_ignore = int(self.num_atoms + 1)
         bond_ignore = int(self.num_edges + 1)

@@ -13,6 +13,7 @@ from torch.nn.utils.rnn import pad_sequence
 from torch.utils.data import DataLoader
 from torch_sparse import SparseTensor
 
+from models.global_utils import SMILES_DIR, DATA_DIR
 from models.magnet.src.chemutils.cangen import sort_sample
 from models.magnet.src.chemutils.constants import ATOM_LIST, BOND_LIST
 from models.magnet.src.chemutils.rdkit_helpers import (
@@ -28,12 +29,11 @@ class MolDataModule(pl.LightningDataModule):
     Lightning Data Module to handle different datasets & loaders
     """
 
-    def __init__(self, dataset, data_dir, batch_size: int = 32, num_workers=None, shuffle=True):
+    def __init__(self, dataset, batch_size: int = 32, num_workers=None, shuffle=True):
         super().__init__()
         self.name = dataset
         self.shuffle = shuffle
         self.ef_size = len(BOND_LIST)
-        self.path = data_dir
         self.dl_args = {
             "batch_size": batch_size,
             "num_workers": num_workers,
@@ -42,9 +42,9 @@ class MolDataModule(pl.LightningDataModule):
         }
 
     def setup(self, stage=None):
-        self.train_ds = MoleculeDataset(self.path, self.name, "train.txt")
-        self.val_ds = MoleculeDataset(self.path, self.name, "val.txt")
-        self.test_ds = MoleculeDataset(self.path, self.name, "test.txt")
+        self.train_ds = MoleculeDataset(self.name, "train.txt")
+        self.val_ds = MoleculeDataset(self.name, "val.txt")
+        self.test_ds = MoleculeDataset(self.name, "test.txt")
         # make dimensions for model available
         self.feature_sizes = self.train_ds.feature_sizes
 
@@ -67,12 +67,12 @@ class MoleculeDataset(torch.utils.data.Dataset):
     Torch Dataset to handle loading of individual molecules from one dataset
     """
 
-    def __init__(self, path, dataset_name, filename):
+    def __init__(self, dataset_name, filename):
         super().__init__()
-        filepath = path / "smiles_files" / dataset_name.lower() / filename
+        filepath = SMILES_DIR / dataset_name.lower() / filename
         with open(filepath, "rb") as file:
             self.all_smiles = file.readlines()
-        self.mol_object_dir = path / "data" / "MAGNET" / dataset_name / filepath.stem
+        self.mol_object_dir = DATA_DIR / "MAGNET" / dataset_name / filepath.stem
 
         self.atoms = ATOM_LIST
         self.atom_to_id, self.id_to_atom = dict(), dict()
@@ -80,9 +80,11 @@ class MoleculeDataset(torch.utils.data.Dataset):
             self.atom_to_id[a] = i
             self.id_to_atom[i] = a
 
-        target_file = path / "data" / "MAGNET" / dataset_name / "magnet_vocab.pkl"
+        target_file = DATA_DIR / "MAGNET" / dataset_name / "magnet_vocab.pkl"
         with open(target_file, "rb") as file:
             shape_vocab = pickle.load(file)
+
+        vocab_stats = shape_vocab.pop("stats")
 
         self.shapes = list(shape_vocab.keys())
         self.hash_to_id, self.id_to_hash, self.shape_to_size = dict(), dict(), dict()
@@ -114,6 +116,11 @@ class MoleculeDataset(torch.utils.data.Dataset):
             num_atoms=len(self.atoms),
             num_shapes=len(self.shapes),
             atom_adj_feat_size=len(BOND_LIST),
+            min_size=vocab_stats["min_mol_size"],
+            max_size=vocab_stats["max_mol_size"],
+            # add additional buffer in case we have a molecule with more atoms than the max
+            max_shape_size=vocab_stats["max_shape_size"] + 5,
+            max_mult_shapes=vocab_stats["max_num_shapes"] + 5,
         )
 
     def __len__(self):

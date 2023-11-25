@@ -196,9 +196,9 @@ def batch_from_motif_pred(batch, motif_smiles_pred, device, dataset):
 
 
 class MotifAtomDecoder(torch.nn.Module):
-    def __init__(self, feat_sizes, dim_config, hidden_size, max_motif_len=35):
+    def __init__(self, feat_sizes, dim_config, hidden_size):
         super().__init__()
-        self.max_motif_len = max_motif_len
+        self.max_motif_len = feat_sizes["max_shape_size"]
         input_size = (
             hidden_size
             + dim_config["motif_seq_positional_dim"]
@@ -206,12 +206,12 @@ class MotifAtomDecoder(torch.nn.Module):
             + dim_config["atom_charge_dim"]
         )
         self.to_atom = MLP([input_size, feat_sizes["num_atoms"] + 3])
-        self.to_memory = MLP([hidden_size + max_motif_len, input_size, input_size])
+        self.to_memory = MLP([hidden_size + feat_sizes["max_shape_size"], input_size, input_size])
         _transformer_layers = torch.nn.TransformerDecoderLayer(
             input_size, nhead=4, dim_feedforward=512, batch_first=True
         )
         self.transformer = torch.nn.TransformerDecoder(_transformer_layers, num_layers=2)
-        self.seq_pos_embedding = Embedding(max_motif_len, dim_config["motif_seq_positional_dim"])
+        self.seq_pos_embedding = Embedding(feat_sizes["max_shape_size"], dim_config["motif_seq_positional_dim"])
         self.start_token = Embedding(1, dim_config["atom_id_dim"])
         self.start_token_charge = Embedding(1, dim_config["atom_charge_dim"])
         self.num_atoms = feat_sizes["num_atoms"]

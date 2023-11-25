@@ -6,6 +6,8 @@ import rdkit
 import tqdm
 
 from models.jtvae.fastjt.mol_tree import MolTree
+from models.global_utils import CKPT_DIR, SMILES_DIR, DATA_DIR
+from pathlib import Path
 
 
 def tensorize(input, assm=True):
@@ -24,22 +26,14 @@ def tensorize(input, assm=True):
     return mol_tree
 
 
-if __name__ == "__main__":
-    lg = rdkit.RDLogger.logger()
-    lg.setLevel(rdkit.RDLogger.CRITICAL)
+def preprocess_jtvae(dataset_name: str, num_processes: int, num_splits: int = 10):
+    train_path = SMILES_DIR / dataset_name / "train.txt"
+    out_dir = DATA_DIR / "JTVAE" / dataset_name / "train"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    pool = Pool(num_processes)
+    num_splits = int(num_splits)
 
-    parser = OptionParser()
-    parser.add_option("-t", "--train", dest="train_path")
-    parser.add_option("-o", "--out", dest="out_dir")
-    parser.add_option("-n", "--split", dest="nsplits", default=10)
-    parser.add_option("-j", "--jobs", dest="njobs", default=8)
-    opts, args = parser.parse_args()
-    opts.njobs = int(opts.njobs)
-
-    pool = Pool(opts.njobs)
-    num_splits = int(opts.nsplits)
-
-    with open(opts.train_path) as f:
+    with open(train_path) as f:
         data = [(line.strip("\r\n ").split()[0], k) for k, line in enumerate(f)]
 
     all_data = []
@@ -54,5 +48,5 @@ if __name__ == "__main__":
         print(st, le)
         sub_data = all_data[st : st + le]
 
-        with open(opts.out_dir + "tensors-%d.pkl" % split_id, "wb") as f:
+        with open(out_dir / ("tensors-%d.pkl" % split_id), "wb") as f:
             pickle.dump(sub_data, f, pickle.HIGHEST_PROTOCOL)
