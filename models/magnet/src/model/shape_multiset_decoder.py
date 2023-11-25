@@ -106,7 +106,7 @@ class ShapeMultisetPredictor(torch.nn.Module):
             current_size = (shape_sizes * multiset_counts).sum(1)
             input_token = torch.cat([input_token, input_token_new], dim=1)
 
-        multiset_counts = torch.clamp(multiset_counts, max=parent_ref.dim_config["max_shape_mult"])
+        multiset_counts = torch.clamp(multiset_counts, max=parent_ref.feature_sizes["max_mult_shapes"])
         shape_num_nodes = multiset_counts.sum(-1).int()
         shape_idx = atom_counts_to_multiset(multiset_counts.int()).to(device).long()
         shape_idx_split = torch.split(shape_idx, shape_num_nodes.tolist())

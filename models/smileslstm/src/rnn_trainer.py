@@ -292,7 +292,7 @@ class _ModelTrainingRound:
         Save a copy of the model with format:
                 model_{info}_{valid_loss}
         """
-        base_name = f"model_{info}_{valid_loss:.3f}"
+        base_name = f"model_{info}"
         logger.info(base_name)
         save_model(self.model_trainer.model, base_dir, base_name)
 

@@ -6,6 +6,43 @@ from keras.layers.convolutional import Convolution1D
 from keras.layers.core import Dense, Dropout, Flatten, RepeatVector
 from keras.models import Model, load_model
 
+CHARS = [
+    "7",
+    "6",
+    "o",
+    "]",
+    "3",
+    "s",
+    "(",
+    "-",
+    "S",
+    "/",
+    "B",
+    "4",
+    "[",
+    ")",
+    "#",
+    "I",
+    "l",
+    "O",
+    "H",
+    "c",
+    "1",
+    "@",
+    "=",
+    "n",
+    "P",
+    "8",
+    "C",
+    "2",
+    "F",
+    "5",
+    "r",
+    "N",
+    "+",
+    "\\",
+    " "
+]
 
 # =============================
 # Encoder functions

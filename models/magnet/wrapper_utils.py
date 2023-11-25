@@ -8,22 +8,27 @@ from models.magnet.src.model.flow_vae import FlowMAGNet
 from models.magnet.src.model.vae import MAGNet
 from models.magnet.train import run_magnet_latent_train, run_magnet_vae_training
 from models.inference import InferenceBase
+from models.global_utils import WB_CONFIG, BASELINE_DIR
+from models.magnet.preprocessing import run_magnet_preproc
 
 
-def get_model_func(dataset: str, model_id: str, seed: int, config: dict) -> FlowMAGNet:
+def get_model_func(dataset: str, model_id: str, seed: int) -> FlowMAGNet:
     model = load_model_from_id(
-        data_dir=Path(config["BASELINE_DIR"]),
-        collection=config["WB_PROJECT"],
+        collection=WB_CONFIG["WB_PROJECT"],
         run_id=model_id,
         model_class=FlowMAGNet,
         seed_model=seed,
     )
-    return InferenceMAGNET(model=model, config=config, seed=seed)
+    return InferenceMAGNET(model=model, seed=seed)
 
 
-def run_training(seed: int, dataset: str, config: dict):
-    magnet_id = run_magnet_vae_training(seed, dataset, config)
-    run_magnet_latent_train(seed, dataset, config, magnet_id)
+def run_training(seed: int, dataset: str):
+    magnet_id = run_magnet_vae_training(seed, dataset)
+    run_magnet_latent_train(seed, dataset, magnet_id)
+
+def run_preprocessing(dataset_name: str, num_processes: int):
+    print("Running MAGNet preprocessing...")
+    run_magnet_preproc(dataset_name, num_processes)
 
 
 class InferenceMAGNET(InferenceBase):

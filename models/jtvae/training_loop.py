@@ -9,7 +9,7 @@ import torch
 import wandb
 from pytorch_lightning.callbacks import ModelCheckpoint
 
-from models.global_utils import get_model_config
+from models.global_utils import get_model_config, BASELINE_DIR, WB_CONFIG, WB_LOG_DIR
 from models.jtvae.fastjt.datautils import MolTreeFolder
 from models.jtvae.fastjt.jtnn_vae import JTNNVAE
 
@@ -17,11 +17,10 @@ lg = rdkit.RDLogger.logger()
 lg.setLevel(rdkit.RDLogger.CRITICAL)
 
 
-def run_jtvae_training(seed, dataset, config):
-    BASELINE_DIR = Path(config["BASELINE_DIR"])
-    kwargs = get_model_config(config, "jtvae", dataset)
+def run_jtvae_training(seed, dataset):
+    kwargs = get_model_config("jtvae", dataset)
     torch.manual_seed(seed=seed)
-    train_loader = MolTreeFolder(dataset, BASELINE_DIR)
+    train_loader = MolTreeFolder(dataset)
     model = JTNNVAE(
         vocab=train_loader.vocab,
         beta=kwargs["beta"],
@@ -31,9 +30,9 @@ def run_jtvae_training(seed, dataset, config):
         lr=kwargs["lr"],
     ).cuda()
     logger = pl.loggers.WandbLogger(
-        entity=config["WB_ENTITY"],
-        project=config["WB_PROJECT"],
-        save_dir=str(BASELINE_DIR / "wb_logs"),
+        entity=WB_CONFIG["WB_ENTITY"],
+        project=WB_CONFIG["WB_PROJECT"],
+        save_dir=str(WB_LOG_DIR),
         name="JTVAE",
     )
     wandb.init()

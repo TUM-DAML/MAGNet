@@ -55,19 +55,22 @@ Further, please adjust the path configuration at  `baselines/global_utils.py` ac
 
 ## General Structure
 
-We have currently structured the repository s.t. wrappers exist for the individual baselines and **training, sampling, reconstruction and optimization** can be done via the following files:
+We have currently structured the repository s.t. wrappers exist for the individual baselines. We provide the following functionality:
 
-```
-# Example: sampling, this file structure exists for all task
-experiments/sampling.py # script for direct execution
-# If you are using SEML
-experiments/sampling_seml.yaml # yaml config to execute sampling
-experiments/sampling_seml.py # seml execution file
-```
+**Preprocessing**:
+Before running any training or inference, you should execute `experiments/preprocessing.py` for any models you would like to work with. In case no ZINC smiles files are provided, this will download and store them autmatically and then extract a vocabulary and preprocess datapoints where neccessary.
 
-Additional Evaluations:
-- `evaluations/guacamol_benchmark.py` to evaluate MOSES and GUACAMOL distribution learning benchmarks (given that you have run a sampling SEML file beforehand, which you are asked to specify)
-- `evaluations/zero_shot_generalization.py` to evaluate reconstruction performance (given that you have run a reconstruction SEML file beforehand, which you are asked to specify)
-- `evaluations/interpolation.ipynb` to plot interpolation in the latent space
+**Training**: 
+After running the preprocessing, you can start training with default hyperparameters for ZINC with `experiments/training.py`. Where possible, this will log metrics to Weights&Biases and save checkpoints of the trained models.
 
-What is currently not supported is a central means of starting preprocessing pipelines for the individual models. Please refer to i.e. `baselines/JTVAE/preprocess_jtvae.py` to start the data preprocessing for JTVAE.
+**Reconstruction**: 
+With the file `experiments/reconstruction.py`, you can perform reconstruction on a given set of SMILES.
+
+**GuacaMol Distribution Learning Benchmarks**:
+`experiments/guacamol_distribution.py` executes the distribution learning benchmarks for any trained model by sampling a sufficient amount of molecules and evaluating them.
+
+**GuacaMol Goal-Directed Benchmark**: 
+`experiments/guacamol_goal_directed.py` executes the goal-directed benchmarks for models that were not previously trained for any optimization task. This can be done either via MSO or gradient ascent, please refer to the script's arguments for more details and hyperparameters. Please note that the hyperparameters provided for defaults are intended for debugging, to conduct the benchmark properly these have to be adjusted (e.g. the number of MSO steps would have to be increased).
+
+**Interpolation**: 
+`experiments/interpolation.ipynb` performs interpolation in the latent space as well as plotting of the trajectories.

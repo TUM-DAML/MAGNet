@@ -7,7 +7,7 @@ import torch
 import wandb
 from pytorch_lightning.callbacks import ModelCheckpoint
 
-from models.global_utils import get_model_config
+from models.global_utils import get_model_config, BASELINE_DIR, WB_CONFIG, WB_LOG_DIR
 from models.hiervae.src.dataset import DataFolder
 from models.hiervae.src.hgnn import HierVAE
 from models.hiervae.src.vocab import PairVocab
@@ -16,10 +16,9 @@ lg = rdkit.RDLogger.logger()
 lg.setLevel(rdkit.RDLogger.CRITICAL)
 
 
-def run_hiervae_training(seed, dataset, config):
-    BASELINE_DIR = Path(config["BASELINE_DIR"])
+def run_hiervae_training(seed, dataset):
     torch.manual_seed(seed)
-    kwargs = get_model_config(config, "hiervae", dataset)
+    kwargs = get_model_config("hiervae", dataset)
     vocab = PairVocab(dataset, BASELINE_DIR)
     train_loader = DataFolder(dataset, kwargs["batch_size"], BASELINE_DIR)
     model = HierVAE(
@@ -30,9 +29,9 @@ def run_hiervae_training(seed, dataset, config):
         step_beta=kwargs["step_beta"],
     )
     logger = pl.loggers.WandbLogger(
-        entity=config["WB_ENTITY"],
-        project=config["WB_PROJECT"],
-        save_dir=str(BASELINE_DIR / "wb_logs"),
+        entity=WB_CONFIG["WB_ENTITY"],
+        project=WB_CONFIG["WB_PROJECT"],
+        save_dir=str(WB_LOG_DIR),
         name="HierVAE",
     )
     wandb.init()

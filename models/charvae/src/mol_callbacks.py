@@ -119,7 +119,6 @@ class EncoderDecoderCheckpoint(ModelCheckpoint):
         self.load_weights_on_restart = False
 
     def on_epoch_end(self, epoch, logs=None):
-        print("WE ARE AT THE CALLBACKKKK")
         logs = logs or {}
         # self.epochs_since_last_save += 1
         # if self.epochs_since_last_save >= self.period:

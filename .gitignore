@@ -1,8 +1,13 @@
 # Custom
-project_folder
+project_dir/smiles_files/
+project_dir/data/
+project_dir/wb_logs/
 */wandb/*
 experiments/slurm_output/*
 wandb/
+experiments/*_seml.py
+experiments/seml/
+experiments/*_seml.yaml
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
