@@ -6,6 +6,7 @@ project_dir/wb_logs/
 experiments/slurm_output/*
 wandb/
 experiments/*_seml.py
+experiments/seml/
 experiments/*_seml.yaml
 
 # Byte-compiled / optimized / DLL files

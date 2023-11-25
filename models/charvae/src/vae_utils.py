@@ -14,8 +14,9 @@ from models.charvae.src.models import (
     load_encoder,
     load_property_predictor,
 )
+from models.charvae.src.models import CHARS as chars
 from models.charvae.src.mol_utils import fast_verify
-from models.global_utils import get_model_config, BASELINE_DIR, SMILES_DIR, DATA_DIR, CKPT_DIR
+from models.global_utils import get_model_config, SMILES_DIR, CKPT_DIR
 
 
 class VAEUtils(object):
@@ -30,7 +31,6 @@ class VAEUtils(object):
         if decoder_file is not None:
             self.params["decoder_weights_file"] = CKPT_DIR / "CHARVAE" / dataset / id / decoder_file
         # char stuff
-        chars = yaml.safe_load(open(DATA_DIR / "CHARVAE" / dataset / "chars.json"))
         self.chars = chars
         self.params["NCHARS"] = len(chars)
         self.char_indices = dict((c, i) for i, c in enumerate(chars))
@@ -143,9 +143,9 @@ class VAEUtils(object):
 
             def decode(z, standardized=standardized):
                 if standardized:
-                    return self.dec.predict(self.unstandardize_z(z))
+                    return self.dec.predict(self.unstandardize_z(z), verbose=0)
                 else:
-                    return self.dec.predict(z)
+                    return self.dec.predict(z, verbose=0)
 
         else:
 
@@ -153,15 +153,15 @@ class VAEUtils(object):
                 fake_shape = (z.shape[0], self.params["MAX_LEN"], self.params["NCHARS"])
                 fake_in = np.zeros(fake_shape)
                 if standardize:
-                    return self.dec.predict([self.unstandardize_z(z), fake_in])
+                    return self.dec.predict([self.unstandardize_z(z), fake_in], verbose=0)
                 else:
-                    return self.dec.predict([z, fake_in])
+                    return self.dec.predict([z, fake_in], verbose=0)
 
         def encode(X, standardize=standardized):
             if standardize:
-                return self.standardize_z(self.enc.predict(X)[0])
+                return self.standardize_z(self.enc.predict(X, verbose=0)[0])
             else:
-                return self.enc.predict(X)[0]
+                return self.enc.predict(X, verbose=0)[0]
 
         return encode, decode
 

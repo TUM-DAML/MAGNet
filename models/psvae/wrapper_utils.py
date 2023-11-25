@@ -8,7 +8,7 @@ import torch
 import tqdm
 from rdkit import Chem
 
-from models.global_utils import get_model_config, CKPT_DIR, BASELINE_DIR, SMILES_DIR, DATA_DIR
+from models.global_utils import get_model_config, CKPT_DIR, WB_CONFIG, SMILES_DIR, DATA_DIR
 from models.inference import InferenceBase
 from models.magnet.src.utils import manual_batch_to_device
 from models.psvae.data.bpe_dataset import get_dataloader
@@ -18,7 +18,7 @@ from models.psvae.training_loop import train
 
 
 def get_model_func(dataset: str, model_id: str, seed: int) -> PSVAEModel:
-    model_path = CKPT_DIR / "PSVAE" / dataset / model_id / "checkpoints"
+    model_path = CKPT_DIR / WB_CONFIG["WB_PROJECT"] / model_id / "checkpoints"
     checkpoint = sorted(os.listdir(model_path))[-1]
     print("Using PSVAE checkpoint: ", checkpoint)
     model_path = model_path / checkpoint
@@ -50,7 +50,7 @@ class InferencePSVAE(InferenceBase):
     def random_mol(self, num_samples):
         zs = self.model.sample_z(num_samples, "cuda")
         sampled_smiles = []
-        for z in tqdm.tqdm(zs):
+        for z in zs:
             mol = self.model.inference_single_z(z, max_atom_num=60, add_edge_th=0.5, temperature=0.8)
             sampled_smiles.append(Chem.MolToSmiles(mol))
         return sampled_smiles

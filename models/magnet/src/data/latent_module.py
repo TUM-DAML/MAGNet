@@ -50,7 +50,7 @@ class LatentDataset(Dataset):
     def __init__(self, collection, model_id, dataset):
         super().__init__()
         self.magnet_model = load_model_from_id(collection, model_id, dataset=dataset)
-        data_loader = self.magnet_model.trainer.datamodule.train_dataloader()
+        data_loader = self.magnet_model.datamodule_ref.train_dataloader()
         self.FM = ExactOptimalTransportConditionalFlowMatcher(sigma=0.0)
 
         z_means, z_stds = [], []

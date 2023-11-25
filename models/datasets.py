@@ -2,9 +2,7 @@ from models.global_utils import SMILES_DIR
 import os
 import os
 import requests
-from zipfile import ZipFile
 import tarfile
-from itertools import chain
 
 DATA_URLS = dict(zinc="https://figshare.com/ndownloader/files/43192467?private_link=e2d9afff8ff6885fb59a")
 

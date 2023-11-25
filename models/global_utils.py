@@ -17,8 +17,8 @@ SOURCE_DIR = Path("/ceph/ssd/staff/sommer/MAGNet/")
 BASELINE_DIR = SOURCE_DIR / "project_dir"
 DATA_DIR = BASELINE_DIR / "data"
 SMILES_DIR = BASELINE_DIR / "smiles_files"
-CKPT_DIR = BASELINE_DIR / "model_ckpts"
 WB_LOG_DIR = BASELINE_DIR / "wb_logs"
+CKPT_DIR = WB_LOG_DIR
 
 SUPPORTED_MODELS = [
     "JTVAE",

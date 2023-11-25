@@ -27,7 +27,6 @@ def run_magnet_latent_train(seed: int, dataset: str,magnet_id: str):
         collection=WB_CONFIG["WB_PROJECT"],
         magnet_id=magnet_id,
         batch_size=kwargs["batch_size"],
-        ndatapoints=kwargs["n_datapoints"],
         num_workers=kwargs["num_workers"],
     )
 
@@ -41,7 +40,6 @@ def run_magnet_latent_train(seed: int, dataset: str,magnet_id: str):
             lr_sch_decay=kwargs["lr_sch_decay"],
             flow_dim_config=kwargs["flow_dim_config"],
             sample_config=kwargs["sample_config"],
-            dataset=dataset
         ),
         dataset=dataset,
         model_class=FlowMAGNet,

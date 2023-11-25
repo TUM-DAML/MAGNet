@@ -3,7 +3,9 @@ from typing import List, Optional, Union
 import numpy as np
 import sk2torch
 import torch
+import json
 from guacamol.benchmark_suites import goal_directed_benchmark_suite
+from guacamol.distribution_matching_generator import DistributionMatchingGenerator
 from guacamol.goal_directed_generator import GoalDirectedGenerator
 from guacamol.scoring_function import ScoringFunction as GuacamolScoringFunction
 from mso.objectives.scoring import ScoringFunction as MSOScoringFunction
@@ -12,9 +14,18 @@ from rdkit import Chem
 from sklearn.neural_network import MLPRegressor
 from tqdm import tqdm
 
-from models.global_utils import BASELINE_DIR, smiles_from_file, SMILES_DIR
+from models.global_utils import smiles_from_file, SMILES_DIR
 from models.inference import InferenceBase
 
+
+
+class RandomGenerator(DistributionMatchingGenerator):
+    def __init__(self, inference_server: InferenceBase):
+        self.inference_server = inference_server
+
+    def generate(self, number_samples: int):
+        return self.inference_server.sample_molecules(number_samples)
+    
 
 class GoalDirectedWrapper(GoalDirectedGenerator):
     def __init__(
@@ -162,3 +173,12 @@ class GoalDirectedWrapper(GoalDirectedGenerator):
                     optimized_molecules.append(optimized_molecule.item())
                     progress_bar.update(1)
         return optimized_molecules
+    
+
+def read_results_from_file(json_path):
+    out_results = dict()
+    with open(json_path) as json_file:
+        guacamol_results = json.load(json_file)
+        for subdict in guacamol_results["results"]:
+            out_results[subdict["benchmark_name"]] = subdict["score"]
+    return out_results

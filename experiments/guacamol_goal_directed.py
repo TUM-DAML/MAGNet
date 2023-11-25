@@ -5,13 +5,12 @@ import time
 from guacamol.assess_goal_directed_generation import assess_goal_directed_generation
 
 from models.global_utils import (
-    BASELINE_DIR,
     SUPPORTED_DATA,
     SUPPORTED_MODELS,
     get_all_model_funcs,
     WB_LOG_DIR
 )
-from models.optimizer import GoalDirectedWrapper
+from models.wrappers.guacamol_benchmarks import GoalDirectedWrapper, read_results_from_file
 
 
 def run_optimization(model_id, dataset, model_name, seed, opt_config, guacamol_benchmark, optimization_method):
@@ -24,24 +23,20 @@ def run_optimization(model_id, dataset, model_name, seed, opt_config, guacamol_b
         inference_server, opt_config, dataset, guacamol_benchmark, optimization_method
     )
 
-    # collect benchmark resultss
+    # collect benchmark results
     json_path = WB_LOG_DIR / "guacamol_jsons" / (str(time.time()) + ".json")
     assess_goal_directed_generation(
         goal_directed_generator, benchmark_version=guacamol_benchmark, json_output_file=json_path
     )
     inference_server.end_inference_server()
-    results = dict()
-    with open(json_path) as json_file:
-        guacamol_results = json.load(json_file)
-        for subdict in guacamol_results["results"]:
-            results[subdict["benchmark_name"]] = subdict["score"]
-    return results
+
+    return read_results_from_file(str(json_path))
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model_name", type=str, choices=SUPPORTED_MODELS, default="PSVAE")
-    parser.add_argument("--model_id", type=str, default="bj01bmmh")
+    parser.add_argument("--model_name", type=str, choices=SUPPORTED_MODELS)
+    parser.add_argument("--model_id", type=str)
     parser.add_argument("--dataset", type=str, choices=SUPPORTED_DATA, default="zinc")
     parser.add_argument("--guacamol_benchmark", type=str, choices=["trivial", "v1", "v2"], default="trivial")
     parser.add_argument("--optimization_method", type=str, choices=["mso", "gasc"], default="mso")

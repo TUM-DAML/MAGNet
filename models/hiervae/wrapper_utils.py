@@ -13,12 +13,12 @@ from models.hiervae.training_loop import run_hiervae_training
 from models.hiervae.preprocess_hiervae import preprocess_hiervae
 from models.hiervae.get_vocab import get_vocab
 from models.inference import InferenceBase
-from models.global_utils import BASELINE_DIR, CKPT_DIR
+from models.global_utils import BASELINE_DIR, CKPT_DIR, WB_CONFIG
 
 
 def get_model_func(dataset: str, model_id: str, seed: int) -> HierVAE:
-    path = CKPT_DIR / "HIERVAE" / dataset / model_id / "checkpoints"
-    checkpoint = sorted(os.listdir(path))[-1]
+    path = CKPT_DIR / WB_CONFIG["WB_PROJECT"] / model_id / "checkpoints"
+    checkpoint = max(os.listdir(path), key=lambda x: int(x[6:].split("-")[0]))
     print("Using HIERVAE checkpoint: ", checkpoint)
     path = path / checkpoint
     vocab = PairVocab(dataset, BASELINE_DIR)

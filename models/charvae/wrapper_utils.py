@@ -17,7 +17,6 @@ def get_model_func(dataset: str, model_id: str, seed: int) -> VAEUtils:
     model = VAEUtils(
         encoder_file=encoder_file,
         decoder_file=decoder_file,
-        config=config,
         dataset=dataset,
         seed=seed,
         id=model_id,

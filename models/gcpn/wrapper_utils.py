@@ -78,4 +78,4 @@ class InferenceGCPN(InferenceBase):
         raise NotImplementedError()
 
     def valid_check(self, smiles):
-        return Chem.MolFromSmiles(smiles).GetNumAtoms() > 2
+        return (Chem.MolFromSmiles(smiles).GetNumAtoms() > 2) and (Chem.MolFromSmiles(smiles) is not None)

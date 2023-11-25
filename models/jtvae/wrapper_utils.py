@@ -4,7 +4,7 @@ from pathlib import Path
 import torch
 
 from models.inference import InferenceBase
-from models.global_utils import CKPT_DIR, SMILES_DIR, DATA_DIR
+from models.global_utils import CKPT_DIR, SMILES_DIR, DATA_DIR, WB_CONFIG
 from models.jtvae.fastjt.datautils import MolTreeFolder
 from models.jtvae.fastjt.jtnn_vae import JTNNVAE
 from models.jtvae.fastjt.mol_tree import main_mol_tree
@@ -17,8 +17,8 @@ def run_training(seed: int, dataset: str):
 
 
 def get_model_func(dataset: str, model_id: str, seed: int) -> InferenceBase:
-    path = CKPT_DIR / "JTVAE" / dataset / model_id / "checkpoints"
-    checkpoint = sorted(os.listdir(path))[-1]
+    path = CKPT_DIR / WB_CONFIG["WB_PROJECT"] / model_id / "checkpoints"
+    checkpoint = max(os.listdir(path), key=lambda x: int(x[6:].split("-")[0]))
     print("Using JTVAE checkpoint: ", checkpoint)
     train_loader = MolTreeFolder(dataset, batch_size=16, partition="train", shuffle=False)
     model = JTNNVAE(vocab=train_loader.vocab)

@@ -22,7 +22,7 @@ def run_smiles_training(seed, dataset):
 
     train_data = SMILES_DIR / args.train_data
     valid_data = SMILES_DIR / args.valid_data
-    output_dir = WB_LOG_DIR / "SMILES-LSTM" / str(time.time())
+    output_dir = WB_LOG_DIR / "SMILES-LSTM" / dataset / str(time.time())
     output_dir.mkdir(parents=True)
 
     trainer = SmilesRnnDistributionLearner(
