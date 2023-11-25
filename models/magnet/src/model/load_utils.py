@@ -3,14 +3,13 @@ from typing import Union
 
 import torch
 
-from models.magnet.src.chemutils.constants import INFERENCE_HPS
+from models.global_utils import WB_LOG_DIR
 from models.magnet.src.data.mol_module import MolDataModule
 from models.magnet.src.model.flow_vae import FlowMAGNet
 from models.magnet.src.model.vae import MAGNet
 
 
 def load_model_from_id(
-    data_dir: str,
     collection: str,
     run_id: str,
     dataset: str = "zinc",
@@ -18,6 +17,7 @@ def load_model_from_id(
     model_class: object = MAGNet,
     load_config: dict = dict(),
     return_config: bool = False,
+    sampling_params: dict = dict(sample_threshold=0.5, batch_size=32),
 ) -> Union[MAGNet, FlowMAGNet]:
     """
     Load model from collection / id and set inference parameters
@@ -25,11 +25,11 @@ def load_model_from_id(
     torch.manual_seed(seed_model)
 
     # create dummy datamodule, this is only for things like id-to-shape maps and not to utilize the DL
-    dm = MolDataModule(dataset, data_dir, batch_size=1, num_workers=6, shuffle=False)
+    dm = MolDataModule(dataset, batch_size=128, num_workers=3, shuffle=False)
     dm.setup()
 
     # load model config from file
-    checkpoint_dir = data_dir / "wb_logs" / collection / run_id / "checkpoints"
+    checkpoint_dir = WB_LOG_DIR / collection / run_id / "checkpoints"
     with open(checkpoint_dir / "load_config.pkl", "rb") as file:
         config = pickle.load(file)
 
@@ -62,8 +62,16 @@ def load_model_from_id(
     model.eval()
     model.set_dataset(incoming_dataset=dm.val_ds, incoming_datamodule=dm)
 
+    # set dataset specific inference parameters
+    print(
+        "ATTENTION! Setting the following min/max inference sizes:",
+        dm.feature_sizes["min_size"],
+        dm.feature_sizes["max_size"],
+    )
+    setattr(model, "min_size", dm.feature_sizes["min_size"])
+    setattr(model, "max_size", dm.feature_sizes["max_size"])
+
     # set inference parameters according to dataset default
-    sampling_params = INFERENCE_HPS[dataset.lower()]
     for key, value in sampling_params.items():
         setattr(model, key, value)
     if return_config:

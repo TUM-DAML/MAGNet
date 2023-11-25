@@ -261,17 +261,3 @@ class Tokenizer:
     def __len__(self):
         return len(self.idx2piece)
 
-
-def parse():
-    parser = argparse.ArgumentParser(description="Graph bpe")
-    parser.add_argument(
-        "--smiles",
-        type=str,
-        default="O=C(Cc1cc(C(F)(F)F)cc(C(F)(F)F)c1)NCC(c1ccccc1Br)N1CCC(N2CCCCC2)CC1",
-        help="The molecule to tokenize (example)",
-    )
-    parser.add_argument("--data", type=str, required=True, help="Path to molecule corpus")
-    parser.add_argument("--vocab_size", type=int, default=500, help="Length of vocab")
-    parser.add_argument("--output", type=str, required=True, help="Path to save vocab")
-    parser.add_argument("--workers", type=int, default=16, help="Number of cpus to use")
-    return parser.parse_args()

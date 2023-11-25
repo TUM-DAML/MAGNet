@@ -13,7 +13,7 @@ from torchdrug.core import Engine
 from torchdrug.core import Registry as R
 from torchdrug.layers import distribution
 
-from models.global_utils import get_model_config, smiles_from_file
+from models.global_utils import get_model_config, smiles_from_file, SMILES_DIR, CKPT_DIR, WB_LOG_DIR
 from models.inference import InferenceBase
 
 
@@ -23,11 +23,10 @@ class mymoldataset(data.MoleculeDataset):
         super().__init__(*args, **kwargs)
 
 
-def get_all_modules(config: dict, dataset_name: str):
-    BASELINE_DIR = Path(config["BASELINE_DIR"])
-    args = get_model_config(config, "graphaf", dataset_name)
+def get_all_modules(dataset_name: str):
+    args = get_model_config("graphaf", dataset_name)
     dataset = mymoldataset()
-    input_smiles = smiles_from_file(BASELINE_DIR / "smiles_files" / dataset_name / "train.txt")
+    input_smiles = smiles_from_file(SMILES_DIR / dataset_name / "train.txt")
     dataset.load_smiles(smiles_list=input_smiles, targets=dict(), kekulize=True, atom_feature="symbol")
     model = models.RGCN(
         input_dim=dataset.num_atom_type,
@@ -59,17 +58,23 @@ def get_all_modules(config: dict, dataset_name: str):
     return solver, task, model, dataset, args
 
 
-def get_model_func(dataset: str, model_id: str, seed: int, config: dict) -> Engine:
-    solver, task, _, _, _ = get_all_modules(config, dataset)
-    solver.load(Path(config["BASELINE_DIR"]) / "model_ckpts" / "GRAPHAF" / dataset / (model_id + ".pkl"))
-    return InferenceGRAPHAF(model=task, config=config, seed=seed)
+def get_model_func(dataset: str, model_id: str, seed: int) -> Engine:
+    solver, task, _, _, _ = get_all_modules(dataset)
+    solver.load(CKPT_DIR / "GRAPHAF" / dataset / (model_id + ".pkl"))
+    return InferenceGRAPHAF(model=task, seed=seed)
 
 
-def run_training(seed: int, dataset: str, config: dict):
+def run_training(seed: int, dataset: str):
     model_name = str(time.time())
-    solver, _, _, _, args = get_all_modules(config, dataset)
+    solver, _, _, _, args = get_all_modules(dataset)
     solver.train(num_epoch=args["num_epochs"])
-    solver.save(Path(config["BASELINE_DIR"]) / "wb_logs" / "GRAPHAF" / dataset / (model_name + ".pkl"))
+    save_path = WB_LOG_DIR / "GRAPHAF" / dataset
+    save_path.mkdir(parents=True, exist_ok=True)
+    solver.save(save_path / (model_name + ".pkl"))
+
+
+def run_preprocessing(dataset_name: str, num_processes: int):
+    print("GRAPHAF does not need preprocessing, terminating now...")
 
 
 class InferenceGRAPHAF(InferenceBase):
@@ -86,4 +91,4 @@ class InferenceGRAPHAF(InferenceBase):
         raise NotImplementedError()
 
     def valid_check(self, smiles):
-        return Chem.MolFromSmiles(smiles).GetNumAtoms() > 2
+        return (Chem.MolFromSmiles(smiles).GetNumAtoms() > 2) and (Chem.MolFromSmiles(smiles) is not None)

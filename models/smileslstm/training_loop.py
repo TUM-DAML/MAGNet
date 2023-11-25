@@ -8,23 +8,22 @@ from pathlib import Path
 import torch
 from guacamol.utils.helpers import setup_default_logger
 
-from models.global_utils import get_model_config
+from models.global_utils import get_model_config, SMILES_DIR, WB_LOG_DIR
 from models.smileslstm.src.smiles_rnn_distribution_learner import (
     SmilesRnnDistributionLearner,
 )
 
 
-def run_smiles_training(seed, dataset, config):
-    BASELINE_DIR = Path(config["BASELINE_DIR"])
-    args = get_model_config(config, "smileslstm", dataset)
+def run_smiles_training(seed, dataset):
+    args = get_model_config("smileslstm", dataset)
     args = Namespace(**args)
     setup_default_logger()
     torch.manual_seed(seed)
 
-    train_data = BASELINE_DIR / "smiles_files" / args.train_data
-    valid_data = BASELINE_DIR / "smiles_files" / args.valid_data
-    output_dir = BASELINE_DIR / "wb_logs" / "SMILES-LSTM" / str(time.time())
-    os.mkdir(output_dir)
+    train_data = SMILES_DIR / args.train_data
+    valid_data = SMILES_DIR / args.valid_data
+    output_dir = WB_LOG_DIR / "SMILES-LSTM" / dataset / str(time.time())
+    output_dir.mkdir(parents=True)
 
     trainer = SmilesRnnDistributionLearner(
         output_dir=output_dir,

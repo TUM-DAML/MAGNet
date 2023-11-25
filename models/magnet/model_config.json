@@ -25,8 +25,6 @@
                 "leaf_rnn_hidden": 256,
                 "shape_rnn_hidden": 256,
                 "shape_gnn_dim": 189,
-                "max_shape_mult": 20,
-                "max_atom_mult": 40,
                 "add_std": 0.1
             },
             "layer_config": {

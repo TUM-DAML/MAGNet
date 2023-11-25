@@ -11,7 +11,7 @@ import rdkit
 import torch
 import tqdm
 
-from models.global_utils import BASELINE_DIR
+from models.global_utils import BASELINE_DIR, SMILES_DIR, DATA_DIR
 from models.hiervae.src.mol_graph import MolGraph
 from models.hiervae.src.vocab import PairVocab, common_atom_vocab
 
@@ -43,76 +43,41 @@ def tensorize_cond(mol_batch, vocab):
     y = MolGraph.tensorize(y, vocab, common_atom_vocab)
     return to_numpy(x)[:-1] + to_numpy(y) + (cond,)  # no need of order for x
 
-
-if __name__ == "__main__":
-    lg = rdkit.RDLogger.logger()
-    lg.setLevel(rdkit.RDLogger.CRITICAL)
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--train", required=True)
-    parser.add_argument("--vocab", required=True)
-    parser.add_argument("--property", default=None)
-    parser.add_argument("--outdir", required=True)
-    parser.add_argument("--batch_size", type=int, default=32)
-    parser.add_argument("--mode", type=str, default="single")
-    parser.add_argument("--ncpu", type=int, default=8)
-    args = parser.parse_args()
-
-    args.vocab = PairVocab(
-        args.vocab,
+def preprocess_hiervae(dataset_name: str, num_processes: int, batch_size: int = 32):
+    train_path = SMILES_DIR / dataset_name / "train.txt"
+    out_dir = DATA_DIR / "HIERVAE" / dataset_name / "train"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    vocab = PairVocab(
+        dataset_name,
         BASELINE_DIR=BASELINE_DIR,
         cuda=False,
-        property=args.property,
+        property=None,
     )
 
-    pool = Pool(args.ncpu)
+    pool = Pool(num_processes)
     random.seed(1)
 
-    if args.mode == "single":
-        # dataset contains single molecules
-        with open(args.train) as f:
-            data = [line.strip("\r\n ").split()[0] for line in f]
+    # dataset contains single molecules
+    with open(train_path) as f:
+        data = [line.strip("\r\n ").split()[0] for line in f]
 
-        random.shuffle(data)
+    random.shuffle(data)
 
-        batches = [data[i : i + args.batch_size] for i in range(0, len(data), args.batch_size)]
-        func = partial(tensorize, vocab=args.vocab)
+    batches = [data[i : i + batch_size] for i in range(0, len(data), batch_size)]
+    func = partial(tensorize, vocab=vocab)
 
-        all_data = []
-        for out in tqdm.tqdm(pool.imap_unordered(func, batches), total=len(batches)):
-            all_data.append(out)
-            pass
+    all_data = []
+    for out in tqdm.tqdm(pool.imap_unordered(func, batches), total=len(batches)):
+        all_data.append(out)
+        pass
 
-        num_splits = len(all_data) // 100
-        print(len(all_data), num_splits - 1, num_splits)
-        le = (len(all_data) + num_splits - 1) // num_splits
+    num_splits = len(all_data) // 100
+    print(len(all_data), num_splits - 1, num_splits)
+    le = (len(all_data) + num_splits - 1) // num_splits
 
-        for split_id in range(num_splits):
-            st = split_id * le
-            sub_data = all_data[st : st + le]
+    for split_id in range(num_splits):
+        st = split_id * le
+        sub_data = all_data[st : st + le]
 
-            with open(args.outdir + "tensors-%d.pkl" % split_id, "wb") as f:
-                pickle.dump(sub_data, f, pickle.HIGHEST_PROTOCOL)
-
-    elif args.mode == "pair":
-        with open(args.train) as f:
-            data = [line.strip("\r\n ").split()[:2] for line in f]
-
-        random.shuffle(data)
-
-        batches = [data[i : i + args.batch_size] for i in range(0, len(data), args.batch_size)]
-        func = partial(tensorize_pair, vocab=args.vocab)
-        all_data = []
-        for out in tqdm.tqdm(pool.imap_unordered(func, batches), total=len(batches)):
-            all_data.append(out)
-            pass
-        num_splits = max(len(all_data) // 1000, 1)
-
-        le = (len(all_data) + num_splits - 1) // num_splits
-
-        for split_id in range(num_splits):
-            st = split_id * le
-            sub_data = all_data[st : st + le]
-
-            with open(args.outdir + "tensors-%d.pkl" % split_id, "wb") as f:
-                pickle.dump(sub_data, f, pickle.HIGHEST_PROTOCOL)
+        with open(out_dir / ("tensors-%d.pkl" % split_id), "wb") as f:
+            pickle.dump(sub_data, f, pickle.HIGHEST_PROTOCOL)

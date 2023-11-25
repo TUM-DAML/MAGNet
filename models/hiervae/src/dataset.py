@@ -6,6 +6,7 @@ import random
 from rdkit import Chem
 from torch.utils.data import Dataset
 
+from models.global_utils import DATA_DIR
 from models.hiervae.src.chemutils import get_leaves
 from models.hiervae.src.mol_graph import MolGraph
 
@@ -56,7 +57,7 @@ class DataFolder(object):
     def __init__(self, name, batch_size, BASELINE_DIR, shuffle=True, partition="train", property=None):
         assert name in ["chembl", "moses", "zinc"]
         self.name = name
-        self.data_folder = BASELINE_DIR / "data" / "HIERVAE" / name / "hiervae_preproc"
+        self.data_folder = DATA_DIR / "HIERVAE" / name 
         if property is not None:
             self.data_folder = self.data_folder / property
         else:
